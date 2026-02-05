@@ -1,21 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Obrigado</title>
-</head>
-<body>
+@extends('layouts.survey')
 
-<h1>Obrigado pela participação!</h1>
+@section('content')
+    <h2 class="text-lg font-semibold text-ueap-green mb-4">
+        Obrigado pela participação!
+    </h2>
 
-<p>
-Suas respostas foram registradas com sucesso.
-</p>
-
-<p>
-A Comissão Própria de Avaliação agradece sua contribuição
-para a melhoria da UEAP.
-</p>
-
-</body>
-</html>
+    <p>
+        Suas respostas foram registradas com sucesso.
+    </p>
+@endsection

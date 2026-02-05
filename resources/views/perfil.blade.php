@@ -1,38 +1,30 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Perfil do Respondente</title>
-</head>
-<body>
+@extends('layouts.survey')
 
-<h1>Perfil do Respondente</h1>
+@section('content')
+    <p class="mb-4 text-ueap-muted">
+        As informações abaixo são utilizadas apenas para fins estatísticos.
+    </p>
 
-<p>
-As informações abaixo servem apenas para fins estatísticos.
-Nenhuma resposta será associada à sua identidade.
-</p>
+    <form method="POST">
+        @csrf
 
-<form method="POST" action="{{ route('perfil') }}">
-    @csrf
+        <label class="block mb-6">
+            <span class="font-medium">Você participa da UEAP como:</span>
 
-    <label>
-        Você participa da UEAP como:
-        <br>
-        <select name="perfil" required>
-            <option value="">Selecione</option>
-            <option value="discente">Discente</option>
-            <option value="docente">Docente</option>
-            <option value="tecnico">Técnico-administrativo</option>
-            <option value="egresso">Egresso</option>
-            <option value="comunidade">Comunidade externa</option>
-        </select>
-    </label>
+            <select name="perfil"
+                    required
+                    class="mt-2 block w-full border border-slate-300 rounded px-3 py-2">
+                <option value="">Selecione</option>
+                <option value="discente">Discente</option>
+                <option value="docente">Docente</option>
+                <option value="tecnico">Técnico-administrativo</option>
+                <option value="egresso">Egresso</option>
+                <option value="comunidade">Comunidade externa</option>
+            </select>
+        </label>
 
-    <br><br>
-
-    <button type="submit">Continuar</button>
-</form>
-
-</body>
-</html>
+        <button class="bg-ueap-blue text-white px-6 py-2 rounded">
+            Continuar
+        </button>
+    </form>
+@endsection

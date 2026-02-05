@@ -1,30 +1,21 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Avaliação Institucional UEAP</title>
-</head>
-<body>
+@extends('layouts.survey')
 
-<h1>Avaliação Institucional</h1>
+@section('content')
+    <p class="mb-4">
+        Este questionário faz parte do processo de avaliação institucional da UEAP.
+    </p>
 
-<p>
-Este questionário faz parte do processo de avaliação institucional da UEAP.
-</p>
-<p>
-Suas respostas são <strong>anônimas</strong> e serão analisadas apenas de forma
-estatística para melhoria da universidade.
-</p>
-<p>
-A participação leva poucos minutos e é muito importante para o planejamento institucional.
-</p>
-<p>
-Não coletamos nome, CPF, matrícula ou qualquer dado que identifique você.
-</p>
+    <p class="mb-4 text-ueap-muted">
+        Suas respostas são anônimas e analisadas apenas de forma estatística.
+    </p>
 
-<a href="{{ route('perfil') }}">
-    <button>Iniciar questionário</button>
-</a>
+    <p class="mb-6">
+        A participação é rápida e contribui para a melhoria da universidade.
+    </p>
 
-</body>
-</html>
+    <a href="{{ route('perfil') }}">
+        <button class="bg-ueap-blue text-white px-6 py-2 rounded hover:bg-blue-800">
+            Iniciar questionário
+        </button>
+    </a>
+@endsection
