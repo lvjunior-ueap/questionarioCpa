@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Response extends Model
 {
     protected $fillable = [
-        'questionnaire_id',
+        'survey_id',
         'perfil'
     ];
-    
-    public function answers()
+
+    public function survey()
     {
-        return $this->hasMany(Answer::class);
+        return $this->belongsTo(Survey::class);
     }
 }

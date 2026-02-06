@@ -2,26 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Questionnaire;
+use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Response;
 use App\Models\Answer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class QuestionnaireController extends Controller
+class SurveyController extends Controller
 {
-    /**
-     * Página de definição de perfil
-     */
     public function perfil()
     {
         return view('perfil');
     }
 
-    /**
-     * Salva perfil e gera token anônimo
-     */
     public function salvarPerfil(Request $request)
     {
         $request->validate([
@@ -34,37 +28,25 @@ class QuestionnaireController extends Controller
             'respostas' => []
         ]);
 
-        return redirect('/questionario/1');
+        return redirect('/survey/1');
     }
 
-    /**
-     * Exibe perguntas paginadas (10 por página)
-     */
-    public function questionario($pagina)
+    public function survey($pagina)
     {
         $pagina = (int) $pagina;
 
-        $questionnaire = Questionnaire::where('active', true)->firstOrFail();
+        $survey = Survey::where('active', true)->firstOrFail();
 
         $questions = Question::with('options')
-            ->where('questionnaire_id', $questionnaire->id)
-            ->orderBy('id') // garante ordem das 30 perguntas
+            ->where('survey_id', $survey->id)
+            ->orderBy('id')
             ->skip(($pagina - 1) * 10)
             ->take(10)
             ->get();
 
-        // segurança: se alguém tentar acessar página inválida
-        if ($questions->isEmpty()) {
-            return redirect('/finalizado');
-        }
-
-        return view('questionario', compact('questions', 'pagina'));
+        return view('survey', compact('questions', 'pagina'));
     }
 
-    /**
-     * Salva respostas da página atual
-     * e persiste tudo ao final
-     */
     public function salvarPagina(Request $request, $pagina)
     {
         $respostas = session('respostas', []);
@@ -73,15 +55,13 @@ class QuestionnaireController extends Controller
         session(['respostas' => $respostas]);
 
         if ($pagina < 3) {
-            return redirect('/questionario/' . ($pagina + 1));
+            return redirect('/survey/' . ($pagina + 1));
         }
 
-        // Questionário ativo
-        $questionnaire = Questionnaire::where('active', true)->firstOrFail();
+        $survey = Survey::where('active', true)->firstOrFail();
 
-        // Cria resposta final
         $response = Response::create([
-            'questionnaire_id' => $questionnaire->id,
+            'survey_id' => $survey->id,
             'perfil' => session('perfil')
         ]);
 

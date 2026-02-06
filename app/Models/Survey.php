@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Questionnaire extends Model
+class Survey extends Model
 {
-    protected $fillable = ['title', 'description', 'active'];
+    protected $fillable = [
+        'title',
+        'description',
+        'active'
+    ];
 
     public function questions()
     {

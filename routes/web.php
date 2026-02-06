@@ -1,33 +1,27 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\QuestionnaireController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SurveyController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// raiz
+Route::get('/', fn () => redirect()->route('welcome'));
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// welcome
+Route::view('/welcome', 'welcome')->name('welcome');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// perfil
+Route::get('/perfil', [SurveyController::class, 'perfil'])
+    ->name('perfil');
 
-Route::get('/perfil', [QuestionnaireController::class, 'perfil'])->name('perfil');
-Route::post('/perfil', [QuestionnaireController::class, 'salvarPerfil']);
+Route::post('/perfil', [SurveyController::class, 'salvarPerfil'])
+    ->name('perfil.salvar');
 
+// survey paginado
+Route::get('/survey/{pagina}', [SurveyController::class, 'survey'])
+    ->name('survey');
 
-Route::get('/questionario/{pagina}', [QuestionnaireController::class, 'questionario']);
-Route::post('/questionario/{pagina}', [QuestionnaireController::class, 'salvarPagina']);
+Route::post('/survey/{pagina}', [SurveyController::class, 'salvarPagina'])
+    ->name('survey.salvar');
 
+// finalização
 Route::view('/finalizado', 'finalizado')->name('finalizado');
-
-
-
-
-require __DIR__.'/auth.php';

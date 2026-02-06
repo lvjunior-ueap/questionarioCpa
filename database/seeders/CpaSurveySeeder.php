@@ -3,16 +3,16 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Questionnaire;
+use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Option;
 
-class CpaQuestionnaireSeeder extends Seeder
+class CpaSurveySeeder extends Seeder
 {
     public function run(): void
     {
         // Questionário principal
-        $questionnaire = Questionnaire::create([
+        $survey = Survey::create([
             'title' => 'Avaliação Institucional UEAP',
             'description' => 'Questionário da Comissão Própria de Avaliação',
             'active' => true
@@ -61,7 +61,7 @@ class CpaQuestionnaireSeeder extends Seeder
             // perguntas 26 e 27 → radio
             if (in_array($index + 1, [26, 27])) {
                 $question = Question::create([
-                    'questionnaire_id' => $questionnaire->id,
+                    'survey_id' => $survey->id,
                     'text' => $text,
                     'type' => 'radio'
                 ]);
@@ -77,7 +77,7 @@ class CpaQuestionnaireSeeder extends Seeder
             // perguntas 28–30 → texto livre
             if ($index + 1 >= 28) {
                 Question::create([
-                    'questionnaire_id' => $questionnaire->id,
+                    'survey_id' => $survey->id,
                     'text' => $text,
                     'type' => 'text'
                 ]);
@@ -87,7 +87,7 @@ class CpaQuestionnaireSeeder extends Seeder
 
             // padrão → escala 1 a 5
             Question::create([
-                'questionnaire_id' => $questionnaire->id,
+                'survey_id' => $survey->id,
                 'text' => $text,
                 'type' => 'scale'
             ]);
