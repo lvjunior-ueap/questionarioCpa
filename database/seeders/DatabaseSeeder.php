@@ -17,9 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $this->call([
-            CpaSurveySeeder::class,
-        ]);
+//        $this->call([
+            ///CpaSurveySeeder::class,
+
+
+            $this->call([
+                CpaSurveyDiscenteSeeder::class,
+            ]);
+        
+
+    //    ]);
 /*
         User::factory()->create([
             'name' => 'Test User',

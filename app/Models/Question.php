@@ -10,9 +10,13 @@ class Question extends Model
 
     protected $fillable = [
         'survey_id',
+        'dimension',
+        'dimension_order',
+        'target_perfil',
         'text',
-        'type'
+        'type',
     ];
+    
 
     public function survey()
     {

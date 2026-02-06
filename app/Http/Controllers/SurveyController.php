@@ -31,20 +31,44 @@ class SurveyController extends Controller
         return redirect('/survey/1');
     }
 
-    public function survey($pagina)
+    public function survey($index)
     {
-        $pagina = (int) $pagina;
-
         $survey = Survey::where('active', true)->firstOrFail();
 
-        $questions = Question::with('options')
-            ->where('survey_id', $survey->id)
-            ->orderBy('id')
-            ->skip(($pagina - 1) * 10)
-            ->take(10)
-            ->get();
+        $perfil = session('perfil');
+    
+        // lista ordenada de dimensões
+        $dimensions = $survey->questions()
+        ->select('dimension', 'dimension_order')
+        ->groupBy('dimension', 'dimension_order')
+        ->orderBy('dimension_order')
+        ->get()
+        ->values();
 
-        return view('survey', compact('questions', 'pagina'));
+    
+        $index = (int) $index;
+    
+        if (!isset($dimensions[$index])) {
+            return redirect('/finalizado');
+        }
+    
+        $currentDimension = $dimensions[$index]->dimension;
+    
+        $questions = $survey->questions()
+        ->where('dimension', $currentDimension)
+        ->where(function ($q) use ($perfil) {
+            $q->whereNull('target_perfil')
+            ->orWhere('target_perfil', $perfil);
+        })
+        ->with('options')
+        ->get();
+        
+        return view('survey', [
+            'questions' => $questions,
+            'dimension' => $currentDimension,
+            'index' => $index,
+            'total' => $dimensions->count(),
+        ]);
     }
 
     public function salvarPagina(Request $request, $pagina)
@@ -75,6 +99,7 @@ class SurveyController extends Controller
 
         session()->flush();
 
-        return redirect('/finalizado');
+        return redirect('/survey/' . ($pagina + 1));
+        
     }
 }

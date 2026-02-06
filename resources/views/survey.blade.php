@@ -1,9 +1,14 @@
 @extends('layouts.survey')
 
 @section('content')
-    <p class="mb-6 text-sm text-ueap-muted">
-        Página {{ $pagina }} de 3
+
+    <p class="text-sm text-ueap-muted mb-2">
+        Etapa {{ $index + 1 }} de {{ $total }}
     </p>
+
+    <h2 class="text-lg font-semibold mb-6">
+        {{ $dimension }}
+    </h2>
 
     <form method="POST">
         @csrf
@@ -14,19 +19,8 @@
                     {{ $question->text }}
                 </p>
 
+                {{-- Escala --}}
                 @if ($question->type === 'scale')
-                    @for ($i = 1; $i <= 5; $i++)
-                        <label class="mr-4">
-                            <input type="radio"
-                                   name="answers[{{ $question->id }}]"
-                                   value="{{ $i }}"
-                                   required>
-                            {{ $i }}
-                        </label>
-                    @endfor
-                @endif
-
-                @if ($question->type === 'radio')
                     @foreach ($question->options as $opt)
                         <label class="block">
                             <input type="radio"
@@ -38,17 +32,32 @@
                     @endforeach
                 @endif
 
+                {{-- Múltipla escolha --}}
+                @if ($question->type === 'multi')
+                    @foreach ($question->options as $opt)
+                        <label class="block">
+                            <input type="checkbox"
+                                   name="answers[{{ $question->id }}][]"
+                                   value="{{ $opt->text }}">
+                            {{ $opt->text }}
+                        </label>
+                    @endforeach
+                @endif
+
+                {{-- Texto livre --}}
                 @if ($question->type === 'text')
-                    <input type="text"
-                           name="answers[{{ $question->id }}]"
-                           class="mt-2 block w-full border border-slate-300 rounded px-3 py-2"
-                           required>
+                    <textarea
+                        name="answers[{{ $question->id }}]"
+                        rows="3"
+                        class="mt-2 w-full border border-slate-300 rounded px-3 py-2">
+                    </textarea>
                 @endif
             </div>
         @endforeach
 
         <button class="bg-ueap-blue text-white px-6 py-2 rounded">
-            {{ $pagina < 3 ? 'Próxima página' : 'Finalizar' }}
+            Próxima etapa
         </button>
     </form>
+
 @endsection

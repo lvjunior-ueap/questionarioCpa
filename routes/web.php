@@ -17,11 +17,15 @@ Route::post('/perfil', [SurveyController::class, 'salvarPerfil'])
     ->name('perfil.salvar');
 
 // survey paginado
-Route::get('/survey/{pagina}', [SurveyController::class, 'survey'])
+Route::get('/survey/{index}', [SurveyController::class, 'survey'])
     ->name('survey');
 
-Route::post('/survey/{pagina}', [SurveyController::class, 'salvarPagina'])
+Route::post('/survey/{index}', [SurveyController::class, 'salvarPagina'])
     ->name('survey.salvar');
 
 // finalização
 Route::view('/finalizado', 'finalizado')->name('finalizado');
+
+Route::get('/livewire', function () {
+    return view('survey-livewire');
+});
