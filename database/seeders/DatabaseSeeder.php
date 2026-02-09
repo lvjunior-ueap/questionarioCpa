@@ -18,7 +18,9 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            CpaSurveySeeder::class,
+            //CpaSurveySeeder::class,
+            SurveySeeder::class,
+            OptionSeeder::class,
         ]);
 /*
         User::factory()->create([
