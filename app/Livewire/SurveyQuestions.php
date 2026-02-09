@@ -20,6 +20,8 @@ class SurveyQuestions extends Component
     public ?string $dimensionDescription = null;
     public $questions;
     public $dimensions;
+    public int $totalPages = 3;
+    public $questions;
     public array $answers = [];
 
     public function mount(int $pagina): void
@@ -58,6 +60,7 @@ class SurveyQuestions extends Component
         $response = Response::create([
             'survey_id' => $survey->id,
             'audience_id' => $this->audienceId
+            'perfil' => session('perfil')
         ]);
 
         foreach ($respostas as $questionId => $value) {
@@ -112,6 +115,11 @@ class SurveyQuestions extends Component
             ->where('survey_id', $survey->id)
             ->where('dimension_id', $currentDimension->id)
             ->orderBy('id')
+        $this->questions = Question::with('options')
+            ->where('survey_id', $survey->id)
+            ->orderBy('id')
+            ->skip(($this->pagina - 1) * 10)
+            ->take(10)
             ->get();
     }
 

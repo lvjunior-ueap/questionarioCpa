@@ -20,6 +20,10 @@
         </div>
     @endif
 
+    <p class="mb-6 text-sm text-ueap-muted">
+        Página {{ $pagina }} de {{ $totalPages }}
+    </p>
+
     <form wire:submit.prevent="submit">
         @foreach ($questions as $question)
             <div class="border border-slate-200 rounded p-4 mb-4">
@@ -62,6 +66,7 @@
 
         <button class="bg-ueap-blue text-white px-6 py-2 rounded">
             {{ $pagina < $totalPages ? 'Próxima dimensão' : 'Finalizar' }}
+            {{ $pagina < $totalPages ? 'Próxima página' : 'Finalizar' }}
         </button>
     </form>
 </div>
