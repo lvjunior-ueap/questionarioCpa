@@ -26,7 +26,9 @@
 
     <form wire:submit.prevent="submit">
         @foreach ($questions as $question)
-            <div class="border border-slate-200 rounded p-4 mb-4">
+            <div wire:key="question-{{ $question->id }}"
+            
+            class="border border-slate-200 rounded p-4 mb-4">
                 <p class="font-medium mb-2">
                     {{ $question->text }}
                 </p>
@@ -35,9 +37,10 @@
                     @for ($i = 1; $i <= 5; $i++)
                         <label class="mr-4">
                             <input type="radio"
-                                   wire:model="answers.{{ $question->id }}"
-                                   value="{{ $i }}"
-                                   required>
+                                name="answers[{{ $question->id }}]"
+                                wire:model="answers.{{ $question->id }}"
+                                value="{{ $i }}"
+                                required>
                             {{ $i }}
                         </label>
                     @endfor
@@ -47,14 +50,15 @@
                     @foreach ($question->options as $opt)
                         <label class="block">
                             <input type="radio"
-                                   wire:model="answers.{{ $question->id }}"
-                                   value="{{ $opt->text }}"
-                                   required>
+                                name="answers[{{ $question->id }}]"
+                                wire:model="answers.{{ $question->id }}"
+                                value="{{ $opt->text }}"
+                                required>
                             {{ $opt->text }}
                         </label>
                     @endforeach
                 @endif
-
+            
                 @if ($question->type === 'text')
                     <input type="text"
                            wire:model="answers.{{ $question->id }}"
