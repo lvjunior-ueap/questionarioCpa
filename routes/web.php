@@ -20,8 +20,5 @@ Route::post('/perfil', [SurveyController::class, 'salvarPerfil'])
 Route::get('/survey/{pagina}', [SurveyController::class, 'survey'])
     ->name('survey');
 
-Route::post('/survey/{pagina}', [SurveyController::class, 'salvarPagina'])
-    ->name('survey.salvar');
-
 // finalização
 Route::view('/finalizado', 'finalizado')->name('finalizado');
