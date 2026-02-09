@@ -6,10 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
-    public $timestamps = false;
-
     protected $fillable = [
         'survey_id',
+        'dimension_id',
         'text',
         'type'
     ];
