@@ -65,7 +65,7 @@ class SurveySeeder extends Seeder
             ->where('audience_id', $audience->id)
             ->pluck('id');
 
-        Question::whereIn('survey_id', [$survey->id])->delete();
+        Question::whereIn('dimension_id', $dimensionIds)->delete();
         Dimension::whereIn('id', $dimensionIds)->delete();
     }
 

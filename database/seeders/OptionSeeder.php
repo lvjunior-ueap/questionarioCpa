@@ -19,12 +19,11 @@ class OptionSeeder extends Seeder
             'Concordo totalmente',
         ];
 
-        Question::where('type', 'likert')->each(function ($question) use ($options) {
-            foreach ($options as $index => $label) {
-                Option::create([
+        Question::where('type', 'radio')->each(function ($question) use ($options) {
+            foreach ($options as $label) {
+                Option::firstOrCreate([
                     'question_id' => $question->id,
-                    'label' => $label,
-                    'value' => $index,
+                    'text' => $label,
                 ]);
             }
         });
