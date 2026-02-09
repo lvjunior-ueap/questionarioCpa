@@ -8,7 +8,7 @@ class Response extends Model
 {
     protected $fillable = [
         'survey_id',
-        'perfil'
+        'audience_id'
     ];
 
     public function survey()

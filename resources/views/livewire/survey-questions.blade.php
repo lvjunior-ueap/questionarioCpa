@@ -1,4 +1,25 @@
 <div>
+    @if ($audienceIntro)
+        <p class="mb-4 text-sm text-ueap-muted whitespace-pre-line">
+            {{ $audienceIntro }}
+        </p>
+    @endif
+
+    <p class="mb-6 text-sm text-ueap-muted">
+        Dimensão {{ $pagina }} de {{ $totalPages }}
+    </p>
+
+    @if ($dimensionTitle)
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold">{{ $dimensionTitle }}</h2>
+            @if ($dimensionDescription)
+                <p class="text-sm text-ueap-muted mt-1">
+                    {{ $dimensionDescription }}
+                </p>
+            @endif
+        </div>
+    @endif
+
     <p class="mb-6 text-sm text-ueap-muted">
         Página {{ $pagina }} de {{ $totalPages }}
     </p>
@@ -44,6 +65,7 @@
         @endforeach
 
         <button class="bg-ueap-blue text-white px-6 py-2 rounded">
+            {{ $pagina < $totalPages ? 'Próxima dimensão' : 'Finalizar' }}
             {{ $pagina < $totalPages ? 'Próxima página' : 'Finalizar' }}
         </button>
     </form>

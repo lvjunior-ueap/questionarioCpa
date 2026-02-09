@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Audience;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -9,17 +10,19 @@ class SurveyController extends Controller
 {
     public function perfil()
     {
-        return view('perfil');
+        $audiences = Audience::orderBy('name')->get();
+
+        return view('perfil', compact('audiences'));
     }
 
     public function salvarPerfil(Request $request)
     {
         $request->validate([
-            'perfil' => 'required'
+            'audience_id' => 'required|exists:audiences,id'
         ]);
 
         session([
-            'perfil' => $request->perfil,
+            'audience_id' => (int) $request->audience_id,
             'token' => Str::uuid()->toString(),
             'respostas' => []
         ]);

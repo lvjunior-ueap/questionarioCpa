@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Answer;
+use App\Models\Audience;
+use App\Models\Dimension;
 use App\Models\Question;
 use App\Models\Response;
 use App\Models\Survey;
@@ -11,12 +13,24 @@ use Livewire\Component;
 class SurveyQuestions extends Component
 {
     public int $pagina = 1;
+    public int $totalPages = 0;
+    public ?int $audienceId = null;
+    public ?string $audienceIntro = null;
+    public ?string $dimensionTitle = null;
+    public ?string $dimensionDescription = null;
+    public $questions;
+    public $dimensions;
     public int $totalPages = 3;
     public $questions;
     public array $answers = [];
 
     public function mount(int $pagina): void
     {
+        $this->audienceId = session('audience_id');
+        if (! $this->audienceId) {
+            redirect()->to('/perfil')->send();
+        }
+
         $this->pagina = $pagina;
         $this->loadQuestions();
 
@@ -45,6 +59,7 @@ class SurveyQuestions extends Component
 
         $response = Response::create([
             'survey_id' => $survey->id,
+            'audience_id' => $this->audienceId
             'perfil' => session('perfil')
         ]);
 
@@ -76,6 +91,30 @@ class SurveyQuestions extends Component
     {
         $survey = Survey::where('active', true)->firstOrFail();
 
+        $audience = Audience::findOrFail($this->audienceId);
+        $this->audienceIntro = $audience->intro_text;
+
+        $this->dimensions = Dimension::query()
+            ->where('survey_id', $survey->id)
+            ->where('audience_id', $this->audienceId)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get();
+
+        $this->totalPages = $this->dimensions->count();
+        $currentDimension = $this->dimensions->get($this->pagina - 1);
+
+        if (! $currentDimension) {
+            redirect()->to('/survey/1')->send();
+        }
+
+        $this->dimensionTitle = $currentDimension->title;
+        $this->dimensionDescription = $currentDimension->description;
+
+        $this->questions = Question::with('options')
+            ->where('survey_id', $survey->id)
+            ->where('dimension_id', $currentDimension->id)
+            ->orderBy('id')
         $this->questions = Question::with('options')
             ->where('survey_id', $survey->id)
             ->orderBy('id')
