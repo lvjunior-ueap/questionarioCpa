@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>{{ $title ?? 'Avaliação Institucional UEAP' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="bg-ueap-bg text-ueap-text min-h-screen">
 
@@ -23,5 +24,6 @@
     </div>
 </div>
 
+@livewireScripts
 </body>
 </html>
