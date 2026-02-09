@@ -10,8 +10,13 @@ class Question extends Model
         'survey_id',
         'dimension_id',
         'text',
-        'type'
+        'type',
     ];
+
+    public function dimension()
+    {
+        return $this->belongsTo(Dimension::class);
+    }
 
     public function survey()
     {

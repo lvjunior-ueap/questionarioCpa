@@ -7,43 +7,90 @@ use App\Models\Survey;
 use App\Models\Audience;
 use App\Models\Dimension;
 use App\Models\Question;
+use Illuminate\Support\Facades\DB;
 
 class SurveySeeder extends Seeder
 {
-    
     public function run(): void
     {
-        $survey = Survey::create([
-            'title' => 'Questionário de Avaliação Institucional – CPA UEAP 2025',
-            'description' => 'Instrumento de autoavaliação institucional – Ano de referência 2025',
-            'active' => true,
-        ]);
+        DB::transaction(function () {
 
-        $audiences = [
-            'docente'  => 'Docente',
-            'discente' => 'Discente',
-            'tecnico'  => 'Técnico Administrativo',
-            'egresso'  => 'Egresso',
-            'externo'  => 'Comunidade Externa',
-        ];
+            // =========================
+            // Survey (idempotente)
+            // =========================
+            $survey = Survey::updateOrCreate(
+                ['title' => 'Questionário de Avaliação Institucional – CPA UEAP 2025'],
+                [
+                    'description' => 'Instrumento de autoavaliação institucional – Ano de referência 2025',
+                    'active' => true,
+                ]
+            );
 
-        foreach ($audiences as $slug => $name) {
-            $audience = Audience::create([
-                'name' => $name,
-                'slug' => $slug,
-                'intro_text' => "Questionário destinado a {$name}.",
-            ]);
+            // =========================
+            // Públicos
+            // =========================
+            $audiences = [
+                'docente'  => 'Docente',
+                'discente' => 'Discente',
+                'tecnico'  => 'Técnico Administrativo',
+                'egresso'  => 'Egresso',
+                'externo'  => 'Comunidade Externa',
+            ];
 
-            $this->seedDimensions($survey, $audience);
-        }
+            foreach ($audiences as $slug => $name) {
+
+                $audience = Audience::updateOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name' => $name,
+                        'intro_text' => "Questionário destinado a {$name}.",
+                    ]
+                );
+
+                // Limpa dimensões e perguntas desse público
+                $this->clearAudienceSurvey($survey, $audience);
+
+                // Cria dimensões automaticamente
+                $this->seedDimensions($survey, $audience);
+            }
+        });
     }
 
-    private function seedDimensions(Survey $survey, Audience $audience): void
+    // =========================
+    // Limpeza controlada
+    // =========================
+    private function clearAudienceSurvey(Survey $survey, Audience $audience): void
     {
-        $dimensions = [
+        $dimensionIds = Dimension::where('survey_id', $survey->id)
+            ->where('audience_id', $audience->id)
+            ->pluck('id');
 
-            // DIMENSÃO I
-            [
+        Question::whereIn('survey_id', [$survey->id])->delete();
+        Dimension::whereIn('id', $dimensionIds)->delete();
+    }
+
+    // =========================
+    // Mapa público → dimensões
+    // =========================
+    private function audienceDimensionMap(): array
+    {
+        return [
+            'docente'  => [1,2,3,4,5,6,7,8,9,10],
+            'tecnico'  => [1,2,3,4,5,6,7,8,9,10],
+            'discente' => [1,2,3,4,6,7,8,9,10],
+            'egresso'  => [1,2,3,4,7,10],
+            'externo'  => [1,2,3,4,7,10],
+        ];
+    }
+
+    // =========================
+    // Todas as dimensões (I a X)
+    // =========================
+    private function allDimensions(): array
+    {
+        return [
+
+            1 => [
                 'title' => 'Dimensão I – Missão e Plano de Desenvolvimento Institucional (PDI)',
                 'questions' => [
                     'Conheço a missão da UEAP.',
@@ -56,8 +103,7 @@ class SurveySeeder extends Seeder
                 ],
             ],
 
-            // DIMENSÃO II
-            [
+            2 => [
                 'title' => 'Dimensão II – Política para o ensino, a pesquisa, a pós-graduação e a extensão',
                 'questions' => [
                     'As políticas e as estratégias de ensino, pesquisa e extensão da UEAP são executadas de forma interligada.',
@@ -86,8 +132,7 @@ class SurveySeeder extends Seeder
                 ],
             ],
 
-            // DIMENSÃO III
-            [
+            3 => [
                 'title' => 'Dimensão III – Responsabilidade social da instituição',
                 'questions' => [
                     'As atividades da UEAP contribuem para o desenvolvimento social (cultural, econômico e/ou ambiental).',
@@ -102,8 +147,7 @@ class SurveySeeder extends Seeder
                 ],
             ],
 
-            // DIMENSÃO IV
-            [
+            4 => [
                 'title' => 'Dimensão IV – Comunicação com a sociedade',
                 'questions' => [
                     'A comunicação por estes meios é eficiente.',
@@ -123,9 +167,7 @@ class SurveySeeder extends Seeder
                 ],
             ],
 
-            // DIMENSÃO V
-
-            [
+            5 => [
                 'title' => 'Dimensão V – Políticas de pessoal e condições de trabalho',
                 'questions' => [
                     'Os princípios éticos são respeitados nos ambientes que constituem a UEAP.',
@@ -144,10 +186,8 @@ class SurveySeeder extends Seeder
                     'Os canais de comunicação institucional (SIGAA/ e-mail) atendem à comunidade acadêmica de forma satisfatória.',
                 ],
             ],
-            
-            // DIMENSÃO VI
 
-            [
+            6 => [
                 'title' => 'Dimensão VI – Organização e gestão da instituição',
                 'questions' => [
                     'Os coordenadores de cursos cumprem de maneira satisfatória suas funções.',
@@ -167,10 +207,8 @@ class SurveySeeder extends Seeder
                     'A atuação da Pró-Reitoria de Planejamento e Administração (Proplad) é satisfatória.',
                 ],
             ],
-            
-            // DIMENSÃO VII
 
-            [
+            7 => [
                 'title' => 'Dimensão VII – Infraestrutura física e recursos de informação',
                 'questions' => [
                     'A infraestrutura da biblioteca (mesas, cadeiras, espaço físico, computadores, exemplares disponíveis) atende às necessidades da comunidade acadêmica de forma satisfatória.',
@@ -188,9 +226,8 @@ class SurveySeeder extends Seeder
                     'Há infraestrutura para a alimentação da comunidade acadêmica nos Campi.',
                 ],
             ],
-            
-            // DIMENSÃO VIII
-            [
+
+            8 => [
                 'title' => 'Dimensão VIII – Planejamento e avaliação institucional',
                 'questions' => [
                     'Meu setor executa autoavaliações internas.',
@@ -201,10 +238,8 @@ class SurveySeeder extends Seeder
                     'As gestões internas da UEAP incorporam as sugestões divulgadas nos relatórios de avaliação institucional no seu planejamento.',
                 ],
             ],
-            
-            // DIMENSÃO IX
 
-            [
+            9 => [
                 'title' => 'Dimensão IX – Políticas de atendimento aos estudantes',
                 'questions' => [
                     'A recepção e socialização de ingressantes é feita de forma clara e objetiva.',
@@ -220,9 +255,8 @@ class SurveySeeder extends Seeder
                     'Existe um diálogo constante entre a Instituição e as Diretorias Acadêmicas.',
                 ],
             ],
-            
-            // DIMENSÃO X
-            [
+
+            10 => [
                 'title' => 'Dimensão X – Sustentabilidade financeira',
                 'questions' => [
                     'A política orçamentária da UEAP é transparente e coerente.',
@@ -233,26 +267,37 @@ class SurveySeeder extends Seeder
                     'Há estratégias institucionais para captação de recursos e fortalecimento da sustentabilidade financeira.',
                 ],
             ],
-            
-
-
         ];
+    }
 
-        foreach ($dimensions as $order => $data) {
+    // =========================
+    // Criação automática
+    // =========================
+    private function seedDimensions(Survey $survey, Audience $audience): void
+    {
+        $map = $this->audienceDimensionMap();
+        $dimensions = $this->allDimensions();
+
+        foreach ($map[$audience->slug] as $order => $number) {
+
+            $data = $dimensions[$number];
+
             $dimension = Dimension::create([
-                'survey_id' => $survey->id,
+                'survey_id'   => $survey->id,
                 'audience_id' => $audience->id,
-                'title' => $data['title'],
+                'title'       => $data['title'],
                 'description' => null,
-                'order' => $order + 1,
+                'order'       => $order + 1,
             ]);
 
             foreach ($data['questions'] as $text) {
                 Question::create([
-                    'survey_id' => $survey->id,
-                    'text' => $text,
-                    'type' => 'likert',
+                    'survey_id'    => $survey->id,
+                    'dimension_id' => $dimension->id, // 🔥 ESSENCIAL
+                    'text'         => $text,
+                    'type'         => 'radio',
                 ]);
+                
             }
         }
     }
