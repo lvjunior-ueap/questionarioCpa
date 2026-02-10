@@ -26,3 +26,4 @@ Route::view('/finalizado', 'finalizado')->name('finalizado');
 
 // relatório em excel
 Route::get('/relatorio', RelatorioController::class)->name('relatorio');
+
