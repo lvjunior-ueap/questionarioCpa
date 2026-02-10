@@ -16,7 +16,6 @@ class RelatorioCpaExport implements WithMultipleSheets
         return [
             new TotaisPorPublicoSheet($this->dataService),
             new RespostasPorDimensaoSheet($this->dataService),
-            new RespostasPorPerguntaSheet($this->dataService),
         ];
     }
 }

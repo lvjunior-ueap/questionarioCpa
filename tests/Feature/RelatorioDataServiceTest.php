@@ -11,7 +11,7 @@ class RelatorioDataServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_monta_agregacoes_do_relatorio(): void
+    public function test_monta_totais_por_publico_e_respostas_por_dimensao(): void
     {
         $questionnaireId = DB::table('questionnaires')->insertGetId([
             'title' => 'Q',
@@ -77,14 +77,6 @@ class RelatorioDataServiceTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('options')->insert([
-            ['question_id' => $question1, 'text' => 'A'],
-            ['question_id' => $question1, 'text' => 'B'],
-            ['question_id' => $question1, 'text' => 'C'],
-            ['question_id' => $question2, 'text' => 'C'],
-            ['question_id' => $question2, 'text' => 'D'],
-        ]);
-
         $response1 = DB::table('responses')->insertGetId([
             'survey_id' => $surveyId,
             'audience_id' => $audienceA,
@@ -123,13 +115,5 @@ class RelatorioDataServiceTest extends TestCase
             ['publico' => 'Discentes', 'dimensao' => 'Infraestrutura', 'total_respostas' => 1],
             ['publico' => 'Docentes', 'dimensao' => 'Planejamento', 'total_respostas' => 2],
         ], $service->respostasPorDimensao());
-
-        $this->assertSame([
-            ['question_id' => $question1, 'pergunta' => 'Q1', 'resposta' => 'A', 'total_respostas' => 1, 'percentual' => '50,00%'],
-            ['question_id' => $question1, 'pergunta' => 'Q1', 'resposta' => 'B', 'total_respostas' => 1, 'percentual' => '50,00%'],
-            ['question_id' => $question1, 'pergunta' => 'Q1', 'resposta' => 'C', 'total_respostas' => 0, 'percentual' => '0,00%'],
-            ['question_id' => $question2, 'pergunta' => 'Q2', 'resposta' => 'C', 'total_respostas' => 1, 'percentual' => '100,00%'],
-            ['question_id' => $question2, 'pergunta' => 'Q2', 'resposta' => 'D', 'total_respostas' => 0, 'percentual' => '0,00%'],
-        ], $service->respostasPorPerguntaComPercentuais());
     }
 }
