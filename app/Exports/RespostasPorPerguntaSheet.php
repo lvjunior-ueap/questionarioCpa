@@ -17,7 +17,7 @@ class RespostasPorPerguntaSheet implements FromCollection, WithHeadings, WithTit
 
     public function collection(): Collection
     {
-        return collect($this->dataService->respostasPorPergunta())
+        return collect($this->dataService->respostasPorPerguntaComPercentuais())
             ->map(fn (array $row) => [
                 $row['question_id'],
                 $row['pergunta'],
