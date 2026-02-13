@@ -303,34 +303,34 @@ class SurveyQuestions extends Component
     public function getDimensionThemeProperty(): array
     {
         if (! $this->currentQuestion?->dimension) {
-            return $this->buildTheme('#2563eb', 'Questionário');
+            return $this->buildTheme('#2563eb', '📝');
         }
 
         $themes = [
-            1 => ['#3b82f6', 'Planejamento'],
-            2 => ['#8b5cf6', 'Ensino'],
-            3 => ['#14b8a6', 'Docência'],
-            4 => ['#f97316', 'Pessoas'],
-            5 => ['#0ea5e9', 'Inovação'],
-            6 => ['#6366f1', 'Gestão'],
-            7 => ['#10b981', 'Estrutura'],
-            8 => ['#f59e0b', 'Indicadores'],
-            9 => ['#ec4899', 'Formação'],
-            10 => ['#6b7280', 'Recursos'],
+            1 => ['#3b82f6', '🧭'],
+            2 => ['#8b5cf6', '📚'],
+            3 => ['#14b8a6', '👩‍🏫'],
+            4 => ['#f97316', '🤝'],
+            5 => ['#0ea5e9', '💡'],
+            6 => ['#6366f1', '🏛️'],
+            7 => ['#10b981', '🏫'],
+            8 => ['#f59e0b', '📈'],
+            9 => ['#ec4899', '🎓'],
+            10 => ['#6b7280', '💰'],
         ];
 
         $order = (int) ($this->currentQuestion->dimension->order ?? 1);
-        $selected = $themes[$order] ?? ['#2563eb', 'Questionário'];
-
-        if ($this->dimensionTitle) {
-            $selected[1] = $this->dimensionTitle;
-        }
+        $selected = $themes[$order] ?? ['#2563eb', '📝'];
 
         return $this->buildTheme($selected[0], $selected[1]);
     }
 
     public function getDimensionIntroTextProperty(): string
     {
+        if ($this->dimensionDescription) {
+            return $this->dimensionDescription;
+        }
+
         if (! $this->dimensionTitle) {
             return 'Vamos para a próxima etapa do questionário.';
         }
@@ -357,14 +357,14 @@ class SurveyQuestions extends Component
         return ! in_array($currentDimensionId, $seen, true);
     }
 
-    private function buildTheme(string $primaryColor, string $patternText): array
+    private function buildTheme(string $primaryColor, string $patternEmoji): array
     {
-        $encodedPatternText = rawurlencode(mb_strtoupper($patternText));
+        $encodedPatternEmoji = rawurlencode($patternEmoji);
 
         return [
             'primary' => $primaryColor,
             'soft' => $primaryColor . '1A',
-            'pattern' => "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg transform='rotate(45 120 120)'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='22' font-family='Arial,sans-serif' fill='%23cbd5e1'%3E{$encodedPatternText}%3C/text%3E%3C/g%3E%3C/svg%3E\")",
+            'pattern' => "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg transform='rotate(45 120 120)'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E{$encodedPatternEmoji}%3C/text%3E%3C/g%3E%3C/svg%3E\")",
         ];
     }
 }
