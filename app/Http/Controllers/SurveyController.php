@@ -13,6 +13,8 @@ class SurveyController extends Controller
 {
     public function perfil()
     {
+        $this->ensurePerfilAudiences();
+
         $audiences = Audience::orderBy('name')->get();
 
         $audienceDescriptions = [
@@ -21,6 +23,9 @@ class SurveyController extends Controller
             'egresso' => 'Egresso: ex-estudante que já concluiu curso na UEAP.',
             'tecnico' => 'Técnico Administrativo: servidor(a) técnico(a)-administrativo(a) da instituição.',
             'externo' => 'Comunidade Externa: pessoa sem vínculo direto com a UEAP, mas que interage com suas ações e serviços.',
+            'gestao' => 'Gestão da UEAP: servidor(a) que atua hoje ou já atuou em funções de gestão institucional.',
+            'alta_gestao' => 'Reitor, Diretor ou Pró-Reitor: ocupante de cargo de alta liderança acadêmico-administrativa.',
+            'transposto' => 'Funcionário Transposto: servidor(a) aposentado(a) que foi reconvocado(a) para atuação profissional na UEAP.',
         ];
 
         $activeSurveyId = Survey::query()->where('active', true)->value('id');
@@ -91,6 +96,32 @@ class SurveyController extends Controller
         ]);
 
         return redirect('/survey/1');
+    }
+
+
+
+    private function ensurePerfilAudiences(): void
+    {
+        $audiences = [
+            'docente' => 'Docente',
+            'discente' => 'Discente',
+            'tecnico' => 'Técnico Administrativo',
+            'egresso' => 'Egresso',
+            'externo' => 'Comunidade Externa',
+            'gestao' => 'Funcionário da Gestão da UEAP (atual ou ex-gestão)',
+            'alta_gestao' => 'Reitor, Diretor ou Pró-Reitor',
+            'transposto' => 'Funcionário Transposto',
+        ];
+
+        foreach ($audiences as $slug => $name) {
+            Audience::updateOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $name,
+                    'intro_text' => "Questionário destinado a {$name}.",
+                ]
+            );
+        }
     }
 
     public function survey($pagina)

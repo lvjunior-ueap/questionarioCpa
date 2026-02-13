@@ -35,6 +35,9 @@ class SurveySeeder extends Seeder
                 'tecnico'  => 'Técnico Administrativo',
                 'egresso'  => 'Egresso',
                 'externo'  => 'Comunidade Externa',
+                'gestao'   => 'Funcionário da Gestão da UEAP (atual ou ex-gestão)',
+                'alta_gestao' => 'Reitor, Diretor ou Pró-Reitor',
+                'transposto' => 'Funcionário Transposto',
             ];
 
             foreach ($audiences as $slug => $name) {
@@ -80,6 +83,9 @@ class SurveySeeder extends Seeder
             'discente' => [1,2,3,4,6,7,8,9,10],
             'egresso'  => [1,2,3,4,7,10],
             'externo'  => [1,2,3,4,7,10],
+            'gestao'   => [1,2,3,4,5,6,7,8,9,10],
+            'alta_gestao' => [1,2,3,4,5,6,7,8,9,10],
+            'transposto' => [1,4,5,6,7,8,10],
         ];
     }
 
