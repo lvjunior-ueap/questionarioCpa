@@ -154,9 +154,10 @@ class SurveyQuestions extends Component
         return $rules;
     }
 
-    public function updatedAnswers(): void
+    public function updatedAnswers($value, $key): void
     {
-        // força re-render quando qualquer resposta mudar
+        // Garante atualização reativa da barra ao responder questões.
+        $this->answers[$key] = $value;
     }
 
 
@@ -220,7 +221,7 @@ class SurveyQuestions extends Component
     
     public function getRespondidasProperty(): int
     {
-        return count(array_filter($this->answers, fn ($v) => !empty($v)));
+        return count(array_filter($this->answers, fn ($value) => $this->isAnswered($value)));
     }
         
     public function getProgressoProperty(): int
@@ -234,7 +235,7 @@ class SurveyQuestions extends Component
         $respondidas = 0;
 
         foreach ($this->answers as $value) {
-            if (!empty($value)) {
+            if ($this->isAnswered($value)) {
                 $respondidas++;
             }
         }
@@ -251,6 +252,15 @@ class SurveyQuestions extends Component
         }
 
         return (int) round(($this->pagina / $this->totalPages) * 100);
+    }
+
+    private function isAnswered(mixed $value): bool
+    {
+        if (is_string($value)) {
+            return trim($value) !== '';
+        }
+
+        return $value !== null;
     }
 
  

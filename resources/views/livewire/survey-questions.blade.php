@@ -26,7 +26,7 @@
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-ueap-muted">
-                        Progresso da dimensão atual: {{ $this->respondidas }} / {{ $this->totalPerguntas }} respondidas
+                        Progresso das questões da dimensão atual: {{ $this->respondidas }} / {{ $this->totalPerguntas }} respondidas
                     </span>
 
                     <span class="text-xs font-semibold {{ $this->progresso === 100 ? 'text-green-600' : 'text-ueap-muted' }}">
