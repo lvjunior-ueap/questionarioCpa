@@ -20,3 +20,19 @@ button {
     font-weight: 500;
 }
 
+.dimension-question-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.dimension-question-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--dimension-pattern);
+    background-size: 92px 92px;
+    background-repeat: repeat;
+    opacity: 0.35;
+    z-index: -1;
+}

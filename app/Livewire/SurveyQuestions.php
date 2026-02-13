@@ -19,6 +19,7 @@ class SurveyQuestions extends Component
     public ?string $audienceIntro = null;
     public ?string $dimensionTitle = null;
     public ?string $dimensionDescription = null;
+    public bool $showDimensionIntro = false;
 
     public $questions;
     public $dimensions;
@@ -150,6 +151,24 @@ class SurveyQuestions extends Component
 
         $this->dimensionTitle = $this->currentQuestion->dimension?->title;
         $this->dimensionDescription = $this->currentQuestion->dimension?->description;
+
+        $this->showDimensionIntro = $this->shouldShowDimensionIntro();
+    }
+
+    public function continueDimension(): void
+    {
+        if (! $this->currentQuestion?->dimension_id) {
+            $this->showDimensionIntro = false;
+
+            return;
+        }
+
+        $seen = session('dimension_intros_seen', []);
+        $seen[] = $this->currentQuestion->dimension_id;
+
+        session(['dimension_intros_seen' => array_values(array_unique($seen))]);
+
+        $this->showDimensionIntro = false;
     }
 
     private function loadCurrentAnswerFromSession(): void
@@ -279,5 +298,69 @@ class SurveyQuestions extends Component
         }
 
         return $value !== null;
+    }
+
+    public function getDimensionThemeProperty(): array
+    {
+        if (! $this->currentQuestion?->dimension) {
+            return $this->buildTheme('#2563eb', '🧭');
+        }
+
+        $themes = [
+            1 => ['#3b82f6', '🧭'],
+            2 => ['#8b5cf6', '📘'],
+            3 => ['#14b8a6', '🧑‍🏫'],
+            4 => ['#f97316', '👥'],
+            5 => ['#0ea5e9', '🧩'],
+            6 => ['#6366f1', '🏛️'],
+            7 => ['#10b981', '🏫'],
+            8 => ['#f59e0b', '📊'],
+            9 => ['#ec4899', '🎓'],
+            10 => ['#6b7280', '💰'],
+        ];
+
+        $order = (int) ($this->currentQuestion->dimension->order ?? 1);
+        $selected = $themes[$order] ?? ['#2563eb', '🧭'];
+
+        return $this->buildTheme($selected[0], $selected[1]);
+    }
+
+    public function getDimensionIntroTextProperty(): string
+    {
+        if (! $this->dimensionTitle) {
+            return 'Vamos para a próxima etapa do questionário.';
+        }
+
+        return 'Agora você responderá perguntas sobre ' . mb_strtolower($this->dimensionTitle) . '.';
+    }
+
+    private function shouldShowDimensionIntro(): bool
+    {
+        if (! $this->currentQuestion?->dimension_id) {
+            return false;
+        }
+
+        $currentDimensionId = (int) $this->currentQuestion->dimension_id;
+        $previousQuestion = $this->questions->get($this->pagina - 2);
+        $isNewDimension = ! $previousQuestion || (int) $previousQuestion->dimension_id !== $currentDimensionId;
+
+        if (! $isNewDimension) {
+            return false;
+        }
+
+        $seen = session('dimension_intros_seen', []);
+
+        return ! in_array($currentDimensionId, $seen, true);
+    }
+
+    private function buildTheme(string $primaryColor, string $emoji): array
+    {
+        $encodedEmoji = rawurlencode($emoji);
+
+        return [
+            'primary' => $primaryColor,
+            'soft' => $primaryColor . '1A',
+            'pattern' => "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='92' viewBox='0 0 92 92'%3E%3Cg transform='rotate(60 46 46)'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28' fill='%23d1d5db'%3E{$encodedEmoji}%3C/text%3E%3C/g%3E%3C/svg%3E\")",
+        ];
     }
 }
