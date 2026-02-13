@@ -21,6 +21,9 @@ class SurveyController extends Controller
             'egresso' => 'Egresso: ex-estudante que já concluiu curso na UEAP.',
             'tecnico' => 'Técnico Administrativo: servidor(a) técnico(a)-administrativo(a) da instituição.',
             'externo' => 'Comunidade Externa: pessoa sem vínculo direto com a UEAP, mas que interage com suas ações e serviços.',
+            'gestao' => 'Gestão da UEAP: servidor(a) que atua hoje ou já atuou em funções de gestão institucional.',
+            'alta_gestao' => 'Reitor, Diretor ou Pró-Reitor: ocupante de cargo de alta liderança acadêmico-administrativa.',
+            'transposto' => 'Funcionário Transposto: servidor(a) aposentado(a) que foi reconvocado(a) para atuação profissional na UEAP.',
         ];
 
         $activeSurveyId = Survey::query()->where('active', true)->value('id');
