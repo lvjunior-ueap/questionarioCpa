@@ -170,6 +170,16 @@ class SurveyQuestions extends Component
         return view('livewire.survey-questions');
     }
 
+
+    public function getPaginaAnteriorUrlProperty(): ?string
+    {
+        if ($this->pagina <= 1) {
+            return null;
+        }
+
+        return '/survey/' . ($this->pagina - 1);
+    }
+
     public function getTotalPerguntasProperty(): int
     {
         return count($this->questions ?? []);

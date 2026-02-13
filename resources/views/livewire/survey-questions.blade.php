@@ -65,16 +65,19 @@
                 </p>
 
                 @if ($currentQuestion->type === 'scale')
-                    @for ($i = 1; $i <= 5; $i++)
-                        <label class="mr-4">
-                            <input type="radio"
-                                name="answers[{{ $currentQuestion->id }}]"
-                                wire:model="answers.{{ $currentQuestion->id }}"
-                                value="{{ $i }}"
-                                required>
-                            {{ $i }}
-                        </label>
-                    @endfor
+                    <p class="text-xs text-ueap-muted mb-2">Escala: 1 = muito insatisfeito(a) e 5 = muito satisfeito(a).</p>
+                    <div class="flex flex-wrap gap-4">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio"
+                                    name="answers[{{ $currentQuestion->id }}]"
+                                    wire:model="answers.{{ $currentQuestion->id }}"
+                                    value="{{ $i }}"
+                                    required>
+                                <span>{{ $i }}</span>
+                            </label>
+                        @endfor
+                    </div>
                 @endif
 
                 @if ($currentQuestion->type === 'radio')
@@ -99,8 +102,16 @@
             </div>
         @endif
 
-        <button class="bg-ueap-blue text-white px-6 py-2 rounded">
-            {{ $pagina < $totalPages ? 'Próxima pergunta' : 'Finalizar' }}
-        </button>
+        <div class="flex items-center gap-3">
+            @if ($this->paginaAnteriorUrl)
+                <a href="{{ $this->paginaAnteriorUrl }}" class="px-6 py-2 rounded border border-slate-300 text-slate-700 hover:bg-slate-50">
+                    Voltar
+                </a>
+            @endif
+
+            <button class="bg-ueap-blue text-white px-6 py-2 rounded">
+                {{ $pagina < $totalPages ? 'Próxima pergunta' : 'Finalizar' }}
+            </button>
+        </div>
     </form>
 </div>

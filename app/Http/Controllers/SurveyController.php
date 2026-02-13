@@ -12,7 +12,15 @@ class SurveyController extends Controller
     {
         $audiences = Audience::orderBy('name')->get();
 
-        return view('perfil', compact('audiences'));
+        $audienceDescriptions = [
+            'discente' => 'Discente: estudante regularmente matriculado(a) em cursos da UEAP.',
+            'docente' => 'Docente: professor(a) que atua em atividades de ensino, pesquisa e/ou extensão na UEAP.',
+            'egresso' => 'Egresso: ex-estudante que já concluiu curso na UEAP.',
+            'tecnico' => 'Técnico Administrativo: servidor(a) técnico(a)-administrativo(a) da instituição.',
+            'externo' => 'Comunidade Externa: pessoa sem vínculo direto com a UEAP, mas que interage com suas ações e serviços.',
+        ];
+
+        return view('perfil', compact('audiences', 'audienceDescriptions'));
     }
 
     public function salvarPerfil(Request $request)
