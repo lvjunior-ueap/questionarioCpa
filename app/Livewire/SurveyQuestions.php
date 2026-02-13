@@ -77,27 +77,10 @@ class SurveyQuestions extends Component
         $survey = Survey::where('active', true)->firstOrFail();
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         $response = Response::create([
             'survey_id'   => $survey->id,
             'audience_id' => $this->audienceId,
         ]);
-
-
-
-
-
 
 
 
@@ -171,6 +154,13 @@ class SurveyQuestions extends Component
         return $rules;
     }
 
+    public function updatedAnswers(): void
+    {
+        // força re-render quando qualquer resposta mudar
+    }
+
+
+
     /**
      * Retorna apenas respostas válidas (sem nulls)
      */
@@ -220,5 +210,49 @@ class SurveyQuestions extends Component
     {
         return view('livewire.survey-questions');
     }
+
+
+    // barra 1
+    public function getTotalPerguntasProperty(): int
+    {
+        return count($this->questions ?? []);
+    }
+    
+    public function getRespondidasProperty(): int
+    {
+        return count(array_filter($this->answers, fn ($v) => !empty($v)));
+    }
+        
+    public function getProgressoProperty(): int
+    {
+        $total = count($this->questions ?? []);
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $respondidas = 0;
+
+        foreach ($this->answers as $value) {
+            if (!empty($value)) {
+                $respondidas++;
+            }
+        }
+
+        return (int) round(($respondidas / $total) * 100);
+    }
+
+    
+    // barra 2
+    public function getProgressoDimensaoProperty(): int
+    {
+        if ($this->totalPages === 0) {
+            return 0;
+        }
+
+        return (int) round(($this->pagina / $this->totalPages) * 100);
+    }
+
+ 
 
 }

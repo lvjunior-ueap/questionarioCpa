@@ -20,10 +20,6 @@
         </div>
     @endif
 
-    <p class="mb-6 text-sm text-ueap-muted">
-        Página {{ $pagina }} de {{ $totalPages }}
-    </p>
-
     <form wire:submit.prevent="submit">
         @foreach ($questions as $question)
             <div wire:key="question-{{ $question->id }}"
@@ -68,9 +64,53 @@
             </div>
         @endforeach
 
+
+        {{-- Progresso por Dimensão --}}
+        <div class="mb-4">
+            <div class="w-full bg-slate-100 rounded-full h-2">
+                <div
+                    class="bg-slate-400 h-2 rounded-full transition-all duration-500"
+                    style="width: {{ $this->progressoDimensao }}%">
+                </div>
+            </div>
+        </div>
+
+        {{-- Progresso por Perguntas (principal) --}}
+        <div class="sticky top-0 z-50 bg-white pb-4 mb-6 border-b border-slate-200">
+
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-ueap-muted">
+                    {{ $this->respondidas }} / {{ $this->totalPerguntas }} respondidas
+                </span>
+
+                <span class="text-xs font-semibold
+                    {{ $this->progresso === 100 ? 'text-green-600' : 'text-ueap-muted' }}">
+                    {{ $this->progresso }}%
+                </span>
+            </div>
+
+            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <div
+                    class="h-3 rounded-full transition-all duration-500 ease-in-out
+                    {{ $this->progresso === 100 ? 'bg-green-500' : 'bg-ueap-blue' }}"
+                    style="width: {{ $this->progresso }}%">
+                </div>
+            </div>
+        
+
+        
+            <p class="mt-2 text-xs text-right 
+                {{ $this->progresso === 100 ? 'text-green-600 font-semibold' : 'text-ueap-muted' }}">
+                {{ $this->progresso }}%
+            </p>
+        
+        </div>
+        
+
+
+
         <button class="bg-ueap-blue text-white px-6 py-2 rounded">
             {{ $pagina < $totalPages ? 'Próxima dimensão' : 'Finalizar' }}
-            {{ $pagina < $totalPages ? 'Próxima página' : 'Finalizar' }}
         </button>
     </form>
 </div>
