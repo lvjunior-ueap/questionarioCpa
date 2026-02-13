@@ -8,12 +8,9 @@ use App\Models\Dimension;
 use App\Models\Question;
 use App\Models\Response;
 use App\Models\Survey;
-use Livewire\Component;
+use App\Models\SurveySession;
 use App\Support\DimensionTheme;
-
-use App\Services\SurveyService;
-use App\Support\SurveyState;
-
+use Livewire\Component;
 
 class SurveyQuestions extends Component
 {
@@ -50,12 +47,12 @@ class SurveyQuestions extends Component
 
     public function submit()
     {
-        $this->validate($this->rules());
+        $this->validate($this->rules(), $this->messages());
 
         $answersLimpos = $this->getAnswersLimpos();
 
         $anteriores = $this->getSavedAnswers();
-        $respostas  = $anteriores + $answersLimpos;
+        $respostas = $anteriores + $answersLimpos;
 
         $this->saveAnswers($respostas);
 
@@ -66,7 +63,7 @@ class SurveyQuestions extends Component
         $survey = Survey::where('active', true)->firstOrFail();
 
         $response = Response::create([
-            'survey_id'   => $survey->id,
+            'survey_id' => $survey->id,
             'audience_id' => $this->audienceId,
         ]);
 
@@ -74,13 +71,14 @@ class SurveyQuestions extends Component
             Answer::create([
                 'response_id' => $response->id,
                 'question_id' => $questionId,
-                'value'       => $value,
+                'value' => $value,
             ]);
         }
 
+        $this->markSessionAsCompleted();
         $this->clearSavedAnswers();
         $this->clearSeenDimensions();
-        
+
         return redirect()->to('/finalizado');
     }
 
@@ -90,8 +88,42 @@ class SurveyQuestions extends Component
             return [];
         }
 
+        $field = 'answers.' . $this->currentQuestion->id;
+        $rules = [$field => ['required']];
+
+        if ($this->currentQuestion->type === 'scale') {
+            $rules[$field][] = 'integer';
+            $rules[$field][] = 'between:1,5';
+        }
+
+        if ($this->currentQuestion->type === 'radio') {
+            $allowed = $this->currentQuestion->options->pluck('text')->all();
+            $rules[$field][] = 'in:' . implode(',', array_map(fn ($value) => str_replace(',', '\\,', $value), $allowed));
+        }
+
+        if ($this->currentQuestion->type === 'text') {
+            $rules[$field][] = 'string';
+            $rules[$field][] = 'min:3';
+            $rules[$field][] = 'max:500';
+        }
+
+        return $rules;
+    }
+
+    public function messages(): array
+    {
+        if (! $this->currentQuestion) {
+            return [];
+        }
+
+        $field = 'answers.' . $this->currentQuestion->id;
+
         return [
-            'answers.' . $this->currentQuestion->id => 'required',
+            $field . '.required' => 'Responda a pergunta para continuar.',
+            $field . '.between' => 'Escolha um valor entre 1 e 5.',
+            $field . '.in' => 'Escolha uma opção válida da lista.',
+            $field . '.min' => 'A resposta deve ter pelo menos 3 caracteres.',
+            $field . '.max' => 'A resposta deve ter no máximo 500 caracteres.',
         ];
     }
 
@@ -196,7 +228,6 @@ class SurveyQuestions extends Component
         return view('livewire.survey-questions');
     }
 
-
     public function getPaginaAnteriorUrlProperty(): ?string
     {
         if ($this->pagina <= 1) {
@@ -291,6 +322,17 @@ class SurveyQuestions extends Component
         return $count;
     }
 
+    public function getResumeLinkProperty(): ?string
+    {
+        $token = session('token');
+
+        if (! $token) {
+            return null;
+        }
+
+        return route('survey.retomar', ['token' => $token]);
+    }
+
     private function mergedAnswers(): array
     {
         $saved = $this->getSavedAnswers();
@@ -346,57 +388,84 @@ class SurveyQuestions extends Component
         return ! in_array($currentDimensionId, $seen, true);
     }
 
-
-    
-    /* ============================
-     | SESSION HELPERS
-     ============================ */
-    
     private function getSavedAnswers(): array
     {
         return session('respostas', []);
     }
-    
+
     private function saveAnswers(array $answers): void
     {
         session(['respostas' => $answers]);
+        $this->persistSurveySession();
     }
-    
+
     private function clearSavedAnswers(): void
     {
-        session()->forget('respostas');
+        session()->forget(['respostas', 'token']);
     }
-    
+
     private function getSeenDimensions(): array
     {
         return session('dimension_intros_seen', []);
     }
-    
+
     private function markDimensionAsSeen(int $dimensionId): void
     {
         $seen = $this->getSeenDimensions();
         $seen[] = $dimensionId;
-    
+
         session([
-            'dimension_intros_seen' => array_values(array_unique($seen))
+            'dimension_intros_seen' => array_values(array_unique($seen)),
         ]);
+
+        $this->persistSurveySession();
     }
-    
+
     private function clearSeenDimensions(): void
     {
         session()->forget('dimension_intros_seen');
     }
 
-//tema
+    private function dispatchBackground(): void
+    {
+        $theme = $this->dimensionTheme;
 
-private function dispatchBackground(): void
-{
-    $theme = $this->dimensionTheme;
+        $this->dispatch('updateBackground', pattern: $theme['pattern']);
+    }
 
-    $this->dispatch('updateBackground', pattern: $theme['pattern']);
+    private function persistSurveySession(): void
+    {
+        $token = session('token');
+
+        if (! $token) {
+            return;
+        }
+
+        SurveySession::query()
+            ->where('token', $token)
+            ->whereNull('completed_at')
+            ->update([
+                'audience_id' => $this->audienceId,
+                'answers' => $this->getSavedAnswers(),
+                'seen_dimensions' => $this->getSeenDimensions(),
+            ]);
+    }
+
+    private function markSessionAsCompleted(): void
+    {
+        $token = session('token');
+
+        if (! $token) {
+            return;
+        }
+
+        SurveySession::query()
+            ->where('token', $token)
+            ->whereNull('completed_at')
+            ->update([
+                'answers' => $this->getSavedAnswers(),
+                'seen_dimensions' => $this->getSeenDimensions(),
+                'completed_at' => now(),
+            ]);
+    }
 }
-
-
-}
-
-

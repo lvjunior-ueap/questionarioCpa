@@ -9,6 +9,11 @@ class Audience extends Model
     protected $fillable = [
         'name',
         'slug',
-        'intro_text'
+        'intro_text',
     ];
+
+    public function dimensions()
+    {
+        return $this->hasMany(Dimension::class);
+    }
 }

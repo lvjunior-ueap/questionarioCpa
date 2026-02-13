@@ -16,4 +16,17 @@ class Survey extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Survey $survey) {
+            if (! $survey->active) {
+                return;
+            }
+
+            static::where('id', '!=', $survey->id)
+                ->where('active', true)
+                ->update(['active' => false]);
+        });
+    }
 }
