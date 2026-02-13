@@ -9,6 +9,11 @@ use App\Models\Question;
 use App\Models\Response;
 use App\Models\Survey;
 use Livewire\Component;
+use App\Support\DimensionTheme;
+
+use App\Services\SurveyService;
+use App\Support\SurveyState;
+
 
 class SurveyQuestions extends Component
 {
@@ -40,6 +45,7 @@ class SurveyQuestions extends Component
         $this->loadSurveyData();
         $this->loadCurrentQuestion();
         $this->loadCurrentAnswerFromSession();
+        $this->dispatchBackground();
     }
 
     public function submit()
@@ -48,10 +54,10 @@ class SurveyQuestions extends Component
 
         $answersLimpos = $this->getAnswersLimpos();
 
-        $anteriores = session('respostas', []);
+        $anteriores = $this->getSavedAnswers();
         $respostas  = $anteriores + $answersLimpos;
 
-        session(['respostas' => $respostas]);
+        $this->saveAnswers($respostas);
 
         if ($this->pagina < $this->totalPages) {
             return redirect()->to('/survey/' . ($this->pagina + 1));
@@ -72,8 +78,9 @@ class SurveyQuestions extends Component
             ]);
         }
 
-        session()->forget('respostas');
-
+        $this->clearSavedAnswers();
+        $this->clearSeenDimensions();
+        
         return redirect()->to('/finalizado');
     }
 
@@ -153,6 +160,7 @@ class SurveyQuestions extends Component
         $this->dimensionDescription = $this->currentQuestion->dimension?->description;
 
         $this->showDimensionIntro = $this->shouldShowDimensionIntro();
+        $this->dispatchBackground();
     }
 
     public function continueDimension(): void
@@ -163,10 +171,9 @@ class SurveyQuestions extends Component
             return;
         }
 
-        $seen = session('dimension_intros_seen', []);
-        $seen[] = $this->currentQuestion->dimension_id;
-
-        session(['dimension_intros_seen' => array_values(array_unique($seen))]);
+        $this->markDimensionAsSeen(
+            (int) $this->currentQuestion->dimension_id
+        );
 
         $this->showDimensionIntro = false;
     }
@@ -177,7 +184,7 @@ class SurveyQuestions extends Component
             return;
         }
 
-        $savedAnswers = session('respostas', []);
+        $savedAnswers = $this->getSavedAnswers();
 
         if (array_key_exists($this->currentQuestion->id, $savedAnswers)) {
             $this->answers[$this->currentQuestion->id] = $savedAnswers[$this->currentQuestion->id];
@@ -286,7 +293,7 @@ class SurveyQuestions extends Component
 
     private function mergedAnswers(): array
     {
-        $saved = session('respostas', []);
+        $saved = $this->getSavedAnswers();
 
         return $saved + $this->getAnswersLimpos();
     }
@@ -302,27 +309,9 @@ class SurveyQuestions extends Component
 
     public function getDimensionThemeProperty(): array
     {
-        if (! $this->currentQuestion?->dimension) {
-            return $this->buildTheme('#2563eb', '📝');
-        }
+        $order = (int) ($this->currentQuestion?->dimension->order ?? 1);
 
-        $themes = [
-            1 => ['#3b82f6', '🧭'],
-            2 => ['#8b5cf6', '📚'],
-            3 => ['#14b8a6', '👩‍🏫'],
-            4 => ['#f97316', '🤝'],
-            5 => ['#0ea5e9', '💡'],
-            6 => ['#6366f1', '🏛️'],
-            7 => ['#10b981', '🏫'],
-            8 => ['#f59e0b', '📈'],
-            9 => ['#ec4899', '🎓'],
-            10 => ['#6b7280', '💰'],
-        ];
-
-        $order = (int) ($this->currentQuestion->dimension->order ?? 1);
-        $selected = $themes[$order] ?? ['#2563eb', '📝'];
-
-        return $this->buildTheme($selected[0], $selected[1]);
+        return app(DimensionTheme::class)->resolve($order);
     }
 
     public function getDimensionIntroTextProperty(): string
@@ -352,19 +341,62 @@ class SurveyQuestions extends Component
             return false;
         }
 
-        $seen = session('dimension_intros_seen', []);
+        $seen = $this->getSeenDimensions();
 
         return ! in_array($currentDimensionId, $seen, true);
     }
 
-    private function buildTheme(string $primaryColor, string $patternEmoji): array
-    {
-        $encodedPatternEmoji = rawurlencode($patternEmoji);
 
-        return [
-            'primary' => $primaryColor,
-            'soft' => $primaryColor . '1A',
-            'pattern' => "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg transform='rotate(45 120 120)'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E{$encodedPatternEmoji}%3C/text%3E%3C/g%3E%3C/svg%3E\")",
-        ];
+    
+    /* ============================
+     | SESSION HELPERS
+     ============================ */
+    
+    private function getSavedAnswers(): array
+    {
+        return session('respostas', []);
     }
+    
+    private function saveAnswers(array $answers): void
+    {
+        session(['respostas' => $answers]);
+    }
+    
+    private function clearSavedAnswers(): void
+    {
+        session()->forget('respostas');
+    }
+    
+    private function getSeenDimensions(): array
+    {
+        return session('dimension_intros_seen', []);
+    }
+    
+    private function markDimensionAsSeen(int $dimensionId): void
+    {
+        $seen = $this->getSeenDimensions();
+        $seen[] = $dimensionId;
+    
+        session([
+            'dimension_intros_seen' => array_values(array_unique($seen))
+        ]);
+    }
+    
+    private function clearSeenDimensions(): void
+    {
+        session()->forget('dimension_intros_seen');
+    }
+
+//tema
+
+private function dispatchBackground(): void
+{
+    $theme = $this->dimensionTheme;
+
+    $this->dispatch('updateBackground', pattern: $theme['pattern']);
 }
+
+
+}
+
+

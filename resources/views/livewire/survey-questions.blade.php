@@ -1,21 +1,33 @@
 <div>
     @php($theme = $this->dimensionTheme)
 
-    @if ($audienceIntro)
-        <p class="mb-4 text-sm text-ueap-muted whitespace-pre-line">
-            {{ $audienceIntro }}
-        </p>
-    @endif
+        <div class="w-full max-w-3xl bg-white rounded-lg shadow-sm border border-slate-200 p-6">
 
-    @if ($showDimensionIntro)
-        <div class="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-sm text-ueap-muted mb-3">Nova dimensão</p>
-            <h3 class="text-lg font-semibold mb-2" style="color: {{ $theme['primary'] }}">{{ $dimensionTitle }}</h3>
-            <p class="text-sm text-slate-700 mb-4">{{ $this->dimensionIntroText }}</p>
-            <button type="button" wire:click="continueDimension" class="px-5 py-2 rounded text-white" style="background-color: {{ $theme['primary'] }}">
-                Ok, continuar
-            </button>
-        </div>
+            @if ($audienceIntro)
+                <p class="mb-4 text-sm text-ueap-muted whitespace-pre-line">
+                    {{ $audienceIntro }}
+                </p>
+            @endif
+
+            @if ($showDimensionIntro)
+                <div class="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                    <p class="text-sm text-ueap-muted mb-3">Nova dimensão</p>
+                    <h3 class="text-lg font-semibold mb-2"
+                        style="color: {{ $theme['primary'] }}">
+                        {{ $dimensionTitle }}
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-4">
+                        {{ $this->dimensionIntroText }}
+                    </p>
+                    <button
+                        type="button"
+                        wire:click="continueDimension"
+                        class="px-5 py-2 rounded text-white"
+                        style="background-color: {{ $theme['primary'] }}"
+                    >
+                        Ok, continuar
+                    </button>
+                </div>
     @else
         <p class="mb-6 text-sm text-ueap-muted">
             Pergunta {{ $pagina }} de {{ $totalPages }}
@@ -53,7 +65,7 @@
             </div>
 
             @if ($currentQuestion)
-            <div class="dimension-question-shell mb-6" style="--dimension-pattern: {{ $theme['pattern'] }}; --dimension-primary: {{ $theme['primary'] }};">
+            <div class="dimension-question-shell">
             <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 bg-white dimension-question-card">
                 <p class="font-medium mb-2">
                     {{ $currentQuestion->text }}
@@ -130,4 +142,5 @@
             </div>
         </form>
     @endif
-</div>
+</div> {{-- fecha card branco --}}
+</div> {{-- fecha raiz Livewire --}}
