@@ -8,6 +8,28 @@ body {
                  'Segoe UI', Roboto, Arial, sans-serif;
 }
 
+body.bg-ueap-bg.text-ueap-text.min-h-screen {
+    position: relative;
+    overflow-x: hidden;
+}
+
+body.bg-ueap-bg.text-ueap-text.min-h-screen::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ctext x='18' y='40' font-size='24'%3E%F0%9F%93%98%3C/text%3E%3Ctext x='70' y='34' font-size='22'%3E%F0%9F%8F%AB%3C/text%3E%3Ctext x='16' y='92' font-size='22'%3E%F0%9F%A7%A0%3C/text%3E%3Ctext x='74' y='94' font-size='22'%3E%E2%9C%85%3C/text%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    background-repeat: repeat;
+    opacity: 0.14;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.bg-ueap-bg.text-ueap-text.min-h-screen > * {
+    position: relative;
+    z-index: 1;
+}
+
 h1, h2, h3 {
     font-weight: 600;
 }
