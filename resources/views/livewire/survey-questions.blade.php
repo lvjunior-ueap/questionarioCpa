@@ -6,7 +6,7 @@
     @endif
 
     <p class="mb-6 text-sm text-ueap-muted">
-        Dimensão {{ $pagina }} de {{ $totalPages }}
+        Pergunta {{ $pagina }} de {{ $totalPages }}
     </p>
 
     @if ($dimensionTitle)
@@ -22,11 +22,10 @@
 
     <form wire:submit.prevent="submit">
         <div class="sticky top-0 z-50 bg-white pb-4 mb-6 border-b border-slate-200">
-            {{-- Progresso principal por perguntas respondidas --}}
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-ueap-muted">
-                        Progresso das questões da dimensão atual: {{ $this->respondidas }} / {{ $this->totalPerguntas }} respondidas
+                        Progresso geral: {{ $this->respondidas }} / {{ $this->totalPerguntas }} perguntas respondidas
                     </span>
 
                     <span class="text-xs font-semibold {{ $this->progresso === 100 ? 'text-green-600' : 'text-ueap-muted' }}">
@@ -42,11 +41,10 @@
                 </div>
             </div>
 
-            {{-- Progresso geral por dimensão --}}
             <div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-ueap-muted">
-                        Andamento do questionário: dimensão {{ $pagina }} de {{ $totalPages }}
+                        Dimensão {{ $this->indiceDimensaoAtual }} de {{ $this->totalDimensoes }}: {{ $this->respondidasDimensaoAtual }} / {{ $this->totalPerguntasDimensaoAtual }}
                     </span>
                     <span class="text-xs text-ueap-muted font-medium">{{ $this->progressoDimensao }}%</span>
                 </div>
@@ -60,20 +58,18 @@
             </div>
         </div>
 
-        @foreach ($questions as $question)
-            <div wire:key="question-{{ $question->id }}"
-            
-            class="border border-slate-200 rounded p-4 mb-4">
+        @if ($currentQuestion)
+            <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 mb-4">
                 <p class="font-medium mb-2">
-                    {{ $question->text }}
+                    {{ $currentQuestion->text }}
                 </p>
 
-                @if ($question->type === 'scale')
+                @if ($currentQuestion->type === 'scale')
                     @for ($i = 1; $i <= 5; $i++)
                         <label class="mr-4">
                             <input type="radio"
-                                name="answers[{{ $question->id }}]"
-                                wire:model="answers.{{ $question->id }}"
+                                name="answers[{{ $currentQuestion->id }}]"
+                                wire:model="answers.{{ $currentQuestion->id }}"
                                 value="{{ $i }}"
                                 required>
                             {{ $i }}
@@ -81,30 +77,30 @@
                     @endfor
                 @endif
 
-                @if ($question->type === 'radio')
-                    @foreach ($question->options as $opt)
+                @if ($currentQuestion->type === 'radio')
+                    @foreach ($currentQuestion->options as $opt)
                         <label class="block">
                             <input type="radio"
-                                name="answers[{{ $question->id }}]"
-                                wire:model="answers.{{ $question->id }}"
+                                name="answers[{{ $currentQuestion->id }}]"
+                                wire:model="answers.{{ $currentQuestion->id }}"
                                 value="{{ $opt->text }}"
                                 required>
                             {{ $opt->text }}
                         </label>
                     @endforeach
                 @endif
-            
-                @if ($question->type === 'text')
+
+                @if ($currentQuestion->type === 'text')
                     <input type="text"
-                           wire:model="answers.{{ $question->id }}"
-                           class="mt-2 block w-full border border-slate-300 rounded px-3 py-2"
-                           required>
+                        wire:model="answers.{{ $currentQuestion->id }}"
+                        class="mt-2 block w-full border border-slate-300 rounded px-3 py-2"
+                        required>
                 @endif
             </div>
-        @endforeach
+        @endif
 
         <button class="bg-ueap-blue text-white px-6 py-2 rounded">
-            {{ $pagina < $totalPages ? 'Próxima dimensão' : 'Finalizar' }}
+            {{ $pagina < $totalPages ? 'Próxima pergunta' : 'Finalizar' }}
         </button>
     </form>
 </div>

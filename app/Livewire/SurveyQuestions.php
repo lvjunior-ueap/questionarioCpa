@@ -10,9 +10,6 @@ use App\Models\Response;
 use App\Models\Survey;
 use Livewire\Component;
 
-//tese
-use Illuminate\Support\Facades\DB;
-
 class SurveyQuestions extends Component
 {
     public int $pagina = 1;
@@ -25,11 +22,8 @@ class SurveyQuestions extends Component
 
     public $questions;
     public $dimensions;
+    public ?Question $currentQuestion = null;
 
-    /** 
-     * answers SEMPRE será considerado um array “sujo”
-     * (com buracos e nulls). Nunca use direto.
-     */
     public array $answers = [];
 
     public function mount(int $pagina): void
@@ -40,51 +34,35 @@ class SurveyQuestions extends Component
             redirect()->to('/perfil')->send();
         }
 
-        $this->pagina = $pagina;
-        $this->loadQuestions();
+        $this->pagina = max(1, $pagina);
 
-        // Recarrega respostas já salvas da sessão (apenas da dimensão atual)
-        $savedAnswers = session('respostas', []);
-
-        foreach ($this->questions as $question) {
-            if (array_key_exists($question->id, $savedAnswers)) {
-                $this->answers[$question->id] = $savedAnswers[$question->id];
-            }
-        }
+        $this->loadSurveyData();
+        $this->loadCurrentQuestion();
+        $this->loadCurrentAnswerFromSession();
     }
 
     public function submit()
     {
-
-        // Valida apenas as perguntas da dimensão atual
         $this->validate($this->rules());
 
-        // 🔑 LIMPEZA CRÍTICA
         $answersLimpos = $this->getAnswersLimpos();
 
-        // Acumula na sessão preservando as chaves (question_id)
         $anteriores = session('respostas', []);
         $respostas  = $anteriores + $answersLimpos;
 
         session(['respostas' => $respostas]);
 
-        // Próxima dimensão
         if ($this->pagina < $this->totalPages) {
             return redirect()->to('/survey/' . ($this->pagina + 1));
         }
 
-        // Última página → persistir no banco
         $survey = Survey::where('active', true)->firstOrFail();
-
 
         $response = Response::create([
             'survey_id'   => $survey->id,
             'audience_id' => $this->audienceId,
         ]);
 
-
-
-        // Salva TODAS as respostas acumuladas
         foreach ($respostas as $questionId => $value) {
             Answer::create([
                 'response_id' => $response->id,
@@ -93,89 +71,37 @@ class SurveyQuestions extends Component
             ]);
         }
 
-//vamos ver...
-        DB::table('answers')->insert([
-            'response_id' => $response->id,
-            'question_id' => array_key_first($respostas),
-            'value'       => reset($respostas),
-        ]);
-        
-        
-
-        // (Opcional) normalização 0…5
-        $mapa = [
-            'Não sei / Não se aplica' => 0,
-            'Discordo totalmente'     => 1,
-            'Discordo parcialmente'   => 2,
-            'Indiferente'             => 3,
-            'Concordo parcialmente'   => 4,
-            'Concordo totalmente'     => 5,
-        ];
-
-        $valoresNormalizados = [];
-        foreach ($respostas as $questionId => $texto) {
-            $valoresNormalizados[$questionId] = $mapa[$texto] ?? null;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-        // Limpa sessão ao final
-        //session()->forget('respostas');
-
-
-
-
-
-
-
-
-
+        session()->forget('respostas');
 
         return redirect()->to('/finalizado');
     }
 
     public function rules(): array
     {
-        $rules = [];
-
-        foreach ($this->questions as $question) {
-            $rules['answers.' . $question->id] = 'required';
+        if (! $this->currentQuestion) {
+            return [];
         }
 
-        return $rules;
+        return [
+            'answers.' . $this->currentQuestion->id => 'required',
+        ];
     }
 
     public function updatedAnswers($value, $key): void
     {
-        // Garante atualização reativa da barra ao responder questões.
         $this->answers[$key] = $value;
     }
 
-
-
-    /**
-     * Retorna apenas respostas válidas (sem nulls)
-     */
     private function getAnswersLimpos(): array
     {
         return array_filter(
             $this->answers,
-            fn ($value) => $value !== null
+            fn ($value) => $value !== null && (! is_string($value) || trim($value) !== '')
         );
     }
 
-    private function loadQuestions(): void
+    private function loadSurveyData(): void
     {
-        // Limpa respostas da dimensão anterior
         $this->answers = [];
 
         $survey = Survey::where('active', true)->firstOrFail();
@@ -190,21 +116,53 @@ class SurveyQuestions extends Component
             ->orderBy('id')
             ->get();
 
-        $this->totalPages = $this->dimensions->count();
-        $currentDimension = $this->dimensions->get($this->pagina - 1);
+        $dimensionOrderMap = $this->dimensions->pluck('order', 'id');
 
-        if (! $currentDimension) {
+        $this->questions = Question::with(['options', 'dimension'])
+            ->where('survey_id', $survey->id)
+            ->whereIn('dimension_id', $this->dimensions->pluck('id'))
+            ->orderBy('id')
+            ->get()
+            ->sortBy(fn ($question) => [
+                (int) ($dimensionOrderMap[$question->dimension_id] ?? PHP_INT_MAX),
+                (int) $question->id,
+            ])
+            ->values();
+
+        $this->totalPages = $this->questions->count();
+
+        if ($this->totalPages === 0) {
+            redirect()->to('/finalizado')->send();
+        }
+
+        if ($this->pagina > $this->totalPages) {
+            redirect()->to('/survey/1')->send();
+        }
+    }
+
+    private function loadCurrentQuestion(): void
+    {
+        $this->currentQuestion = $this->questions->get($this->pagina - 1);
+
+        if (! $this->currentQuestion) {
             redirect()->to('/survey/1')->send();
         }
 
-        $this->dimensionTitle = $currentDimension->title;
-        $this->dimensionDescription = $currentDimension->description;
+        $this->dimensionTitle = $this->currentQuestion->dimension?->title;
+        $this->dimensionDescription = $this->currentQuestion->dimension?->description;
+    }
 
-        $this->questions = Question::with('options')
-            ->where('survey_id', $survey->id)
-            ->where('dimension_id', $currentDimension->id)
-            ->orderBy('id')
-            ->get();
+    private function loadCurrentAnswerFromSession(): void
+    {
+        if (! $this->currentQuestion) {
+            return;
+        }
+
+        $savedAnswers = session('respostas', []);
+
+        if (array_key_exists($this->currentQuestion->id, $savedAnswers)) {
+            $this->answers[$this->currentQuestion->id] = $savedAnswers[$this->currentQuestion->id];
+        }
     }
 
     public function render()
@@ -212,46 +170,96 @@ class SurveyQuestions extends Component
         return view('livewire.survey-questions');
     }
 
-
-    // barra 1
     public function getTotalPerguntasProperty(): int
     {
         return count($this->questions ?? []);
     }
-    
+
     public function getRespondidasProperty(): int
     {
-        return count(array_filter($this->answers, fn ($value) => $this->isAnswered($value)));
+        return count(array_filter($this->mergedAnswers(), fn ($value) => $this->isAnswered($value)));
     }
-        
+
     public function getProgressoProperty(): int
     {
-        $total = count($this->questions ?? []);
-
-        if ($total === 0) {
+        if ($this->totalPerguntas === 0) {
             return 0;
         }
 
-        $respondidas = 0;
+        return (int) round(($this->respondidas / $this->totalPerguntas) * 100);
+    }
 
-        foreach ($this->answers as $value) {
-            if ($this->isAnswered($value)) {
-                $respondidas++;
+    public function getProgressoDimensaoProperty(): int
+    {
+        $totalDimensao = $this->totalPerguntasDimensaoAtual;
+
+        if ($totalDimensao === 0) {
+            return 0;
+        }
+
+        return (int) round(($this->respondidasDimensaoAtual / $totalDimensao) * 100);
+    }
+
+    public function getIndiceDimensaoAtualProperty(): int
+    {
+        if (! $this->currentQuestion || ! $this->currentQuestion->dimension_id) {
+            return 0;
+        }
+
+        $index = $this->dimensions
+            ?->search(fn ($dimension) => (int) $dimension->id === (int) $this->currentQuestion->dimension_id);
+
+        if ($index === false) {
+            return 0;
+        }
+
+        return $index + 1;
+    }
+
+    public function getTotalDimensoesProperty(): int
+    {
+        return count($this->dimensions ?? []);
+    }
+
+    public function getTotalPerguntasDimensaoAtualProperty(): int
+    {
+        if (! $this->currentQuestion) {
+            return 0;
+        }
+
+        return $this->questions
+            ->where('dimension_id', $this->currentQuestion->dimension_id)
+            ->count();
+    }
+
+    public function getRespondidasDimensaoAtualProperty(): int
+    {
+        if (! $this->currentQuestion) {
+            return 0;
+        }
+
+        $questionIds = $this->questions
+            ->where('dimension_id', $this->currentQuestion->dimension_id)
+            ->pluck('id')
+            ->all();
+
+        $mergedAnswers = $this->mergedAnswers();
+
+        $count = 0;
+        foreach ($questionIds as $questionId) {
+            if (isset($mergedAnswers[$questionId]) && $this->isAnswered($mergedAnswers[$questionId])) {
+                $count++;
             }
         }
 
-        return (int) round(($respondidas / $total) * 100);
+        return $count;
     }
 
-    
-    // barra 2
-    public function getProgressoDimensaoProperty(): int
+    private function mergedAnswers(): array
     {
-        if ($this->totalPages === 0) {
-            return 0;
-        }
+        $saved = session('respostas', []);
 
-        return (int) round(($this->pagina / $this->totalPages) * 100);
+        return $saved + $this->getAnswersLimpos();
     }
 
     private function isAnswered(mixed $value): bool
@@ -262,7 +270,4 @@ class SurveyQuestions extends Component
 
         return $value !== null;
     }
-
- 
-
 }
