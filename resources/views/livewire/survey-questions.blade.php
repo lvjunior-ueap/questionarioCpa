@@ -1,4 +1,6 @@
 <div>
+    @php($theme = $this->dimensionTheme)
+
     @if ($audienceIntro)
         <p class="mb-4 text-sm text-ueap-muted whitespace-pre-line">
             {{ $audienceIntro }}
@@ -10,7 +12,7 @@
     </p>
 
     @if ($dimensionTitle)
-        <div class="mb-6">
+        <div class="mb-6 rounded-lg border p-4 dimension-header" style="border-color: {{ $theme['soft'] }}; background-color: {{ $theme['soft'] }};">
             <h2 class="text-lg font-semibold">{{ $dimensionTitle }}</h2>
             @if ($dimensionDescription)
                 <p class="text-sm text-ueap-muted mt-1">
@@ -51,15 +53,27 @@
 
                 <div class="w-full bg-slate-100 rounded-full h-2">
                     <div
-                        class="bg-slate-400 h-2 rounded-full transition-all duration-500"
-                        style="width: {{ $this->progressoDimensao }}%">
+                        class="h-2 rounded-full transition-all duration-500"
+                        style="width: {{ $this->progressoDimensao }}%; background-color: {{ $theme['primary'] }}"
+                        >
                     </div>
                 </div>
             </div>
         </div>
 
-        @if ($currentQuestion)
-            <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 mb-4">
+        @if ($showDimensionIntro)
+            <div class="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm text-ueap-muted mb-3">Nova dimensão</p>
+                <h3 class="text-lg font-semibold mb-2" style="color: {{ $theme['primary'] }}">{{ $dimensionTitle }}</h3>
+                <p class="text-sm text-slate-700 mb-4">{{ $this->dimensionIntroText }}</p>
+                <button type="button" wire:click="continueDimension" class="px-5 py-2 rounded text-white" style="background-color: {{ $theme['primary'] }}">
+                    Ok, continuar
+                </button>
+            </div>
+        @endif
+
+        @if ($currentQuestion && ! $showDimensionIntro)
+            <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 mb-4 dimension-question-card" style="--dimension-pattern: {{ $theme['pattern'] }}; --dimension-primary: {{ $theme['primary'] }};">
                 <p class="font-medium mb-2">
                     {{ $currentQuestion->text }}
                 </p>
