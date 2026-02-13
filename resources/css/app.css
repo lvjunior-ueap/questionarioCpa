@@ -20,19 +20,24 @@ button {
     font-weight: 500;
 }
 
-.dimension-question-card {
+.dimension-question-shell {
     position: relative;
-    overflow: hidden;
     isolation: isolate;
 }
 
-.dimension-question-card::before {
+.dimension-question-shell::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -14px;
     background-image: var(--dimension-pattern);
     background-size: 92px 92px;
     background-repeat: repeat;
     opacity: 0.35;
     z-index: -1;
+    pointer-events: none;
+}
+
+.dimension-question-card {
+    position: relative;
+    z-index: 1;
 }

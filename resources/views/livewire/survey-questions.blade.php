@@ -7,23 +7,33 @@
         </p>
     @endif
 
-    <p class="mb-6 text-sm text-ueap-muted">
-        Pergunta {{ $pagina }} de {{ $totalPages }}
-    </p>
-
-    @if ($dimensionTitle)
-        <div class="mb-6 rounded-lg border p-4 dimension-header" style="border-color: {{ $theme['soft'] }}; background-color: {{ $theme['soft'] }};">
-            <h2 class="text-lg font-semibold">{{ $dimensionTitle }}</h2>
-            @if ($dimensionDescription)
-                <p class="text-sm text-ueap-muted mt-1">
-                    {{ $dimensionDescription }}
-                </p>
-            @endif
+    @if ($showDimensionIntro)
+        <div class="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm text-ueap-muted mb-3">Nova dimensão</p>
+            <h3 class="text-lg font-semibold mb-2" style="color: {{ $theme['primary'] }}">{{ $dimensionTitle }}</h3>
+            <p class="text-sm text-slate-700 mb-4">{{ $this->dimensionIntroText }}</p>
+            <button type="button" wire:click="continueDimension" class="px-5 py-2 rounded text-white" style="background-color: {{ $theme['primary'] }}">
+                Ok, continuar
+            </button>
         </div>
-    @endif
+    @else
+        <p class="mb-6 text-sm text-ueap-muted">
+            Pergunta {{ $pagina }} de {{ $totalPages }}
+        </p>
 
-    <form wire:submit.prevent="submit">
-        <div class="sticky top-0 z-50 bg-white pb-4 mb-6 border-b border-slate-200">
+        @if ($dimensionTitle)
+            <div class="mb-6 rounded-lg border p-4 dimension-header" style="border-color: {{ $theme['soft'] }}; background-color: {{ $theme['soft'] }};">
+                <h2 class="text-lg font-semibold">{{ $dimensionTitle }}</h2>
+                @if ($dimensionDescription)
+                    <p class="text-sm text-ueap-muted mt-1">
+                        {{ $dimensionDescription }}
+                    </p>
+                @endif
+            </div>
+        @endif
+
+        <form wire:submit.prevent="submit">
+            <div class="sticky top-0 z-50 bg-white pb-4 mb-6 border-b border-slate-200">
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-ueap-muted">
@@ -59,21 +69,11 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        @if ($showDimensionIntro)
-            <div class="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-ueap-muted mb-3">Nova dimensão</p>
-                <h3 class="text-lg font-semibold mb-2" style="color: {{ $theme['primary'] }}">{{ $dimensionTitle }}</h3>
-                <p class="text-sm text-slate-700 mb-4">{{ $this->dimensionIntroText }}</p>
-                <button type="button" wire:click="continueDimension" class="px-5 py-2 rounded text-white" style="background-color: {{ $theme['primary'] }}">
-                    Ok, continuar
-                </button>
             </div>
-        @endif
 
-        @if ($currentQuestion && ! $showDimensionIntro)
-            <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 mb-4 dimension-question-card" style="--dimension-pattern: {{ $theme['pattern'] }}; --dimension-primary: {{ $theme['primary'] }};">
+            @if ($currentQuestion)
+            <div class="dimension-question-shell mb-6" style="--dimension-pattern: {{ $theme['pattern'] }}; --dimension-primary: {{ $theme['primary'] }};">
+            <div wire:key="question-{{ $currentQuestion->id }}" class="border border-slate-200 rounded p-4 bg-white dimension-question-card">
                 <p class="font-medium mb-2">
                     {{ $currentQuestion->text }}
                 </p>
@@ -114,18 +114,20 @@
                         required>
                 @endif
             </div>
-        @endif
-
-        <div class="flex items-center gap-3">
-            @if ($this->paginaAnteriorUrl)
-                <a href="{{ $this->paginaAnteriorUrl }}" class="px-6 py-2 rounded border border-slate-300 text-slate-700 hover:bg-slate-50">
-                    Voltar
-                </a>
+            </div>
             @endif
 
-            <button class="bg-ueap-blue text-white px-6 py-2 rounded">
-                {{ $pagina < $totalPages ? 'Próxima pergunta' : 'Finalizar' }}
-            </button>
-        </div>
-    </form>
+            <div class="flex items-center gap-3">
+                @if ($this->paginaAnteriorUrl)
+                    <a href="{{ $this->paginaAnteriorUrl }}" class="px-6 py-2 rounded border border-slate-300 text-slate-700 hover:bg-slate-50">
+                        Voltar
+                    </a>
+                @endif
+
+                <button class="bg-ueap-blue text-white px-6 py-2 rounded">
+                    {{ $pagina < $totalPages ? 'Próxima pergunta' : 'Finalizar' }}
+                </button>
+            </div>
+        </form>
+    @endif
 </div>
