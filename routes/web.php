@@ -17,6 +17,10 @@ Route::get('/perfil', [SurveyController::class, 'perfil'])
 Route::post('/perfil', [SurveyController::class, 'salvarPerfil'])
     ->name('perfil.salvar');
 
+
+Route::get('/retomar/{token}', [SurveyController::class, 'retomar'])
+    ->name('survey.retomar');
+
 // survey paginado
 Route::get('/survey/{pagina}', [SurveyController::class, 'survey'])
     ->name('survey');

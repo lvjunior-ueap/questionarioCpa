@@ -106,9 +106,19 @@
                         class="mt-2 block w-full border border-slate-300 rounded px-3 py-2"
                         required>
                 @endif
+
+                @error('answers.' . $currentQuestion->id)
+                    <p class="mt-3 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             </div>
             @endif
+
+            <div class="mb-3 text-xs text-ueap-muted">
+                @if ($this->resumeLink)
+                    Link para continuar depois: <a class="underline" href="{{ $this->resumeLink }}">{{ $this->resumeLink }}</a>
+                @endif
+            </div>
 
             <div class="flex items-center gap-3">
                 @if ($this->paginaAnteriorUrl)
