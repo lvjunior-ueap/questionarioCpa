@@ -13,6 +13,8 @@ class SurveyController extends Controller
 {
     public function perfil()
     {
+        $this->ensurePerfilAudiences();
+
         $audiences = Audience::orderBy('name')->get();
 
         $audienceDescriptions = [
@@ -94,6 +96,32 @@ class SurveyController extends Controller
         ]);
 
         return redirect('/survey/1');
+    }
+
+
+
+    private function ensurePerfilAudiences(): void
+    {
+        $audiences = [
+            'docente' => 'Docente',
+            'discente' => 'Discente',
+            'tecnico' => 'Técnico Administrativo',
+            'egresso' => 'Egresso',
+            'externo' => 'Comunidade Externa',
+            'gestao' => 'Funcionário da Gestão da UEAP (atual ou ex-gestão)',
+            'alta_gestao' => 'Reitor, Diretor ou Pró-Reitor',
+            'transposto' => 'Funcionário Transposto',
+        ];
+
+        foreach ($audiences as $slug => $name) {
+            Audience::updateOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $name,
+                    'intro_text' => "Questionário destinado a {$name}.",
+                ]
+            );
+        }
     }
 
     public function survey($pagina)
